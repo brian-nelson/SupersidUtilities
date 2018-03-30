@@ -1,17 +1,13 @@
 from datetime import timedelta
-from datetime import datetime
-from datetime import date
 from data.datafile import DataFile
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from astral import Astral
 from astral import Location
 
-class ChartBuilder:
+class ChartRenderer:
 
-    def __init__(self, s3):
-        self.S3 = s3
+    def __init__(self):
 
         return
 
@@ -28,9 +24,8 @@ class ChartBuilder:
             y.append(dp.ReadingValue)
 
         sun = self.get_sun_info(datafile)
-
-        sunset = self.get_decimal_time(sun[0])
-        sunrise = self.get_decimal_time(sun[1])
+        sunrise = self.get_decimal_time(sun[0])
+        sunset = self.get_decimal_time(sun[1])
 
         plt.plot(x, y)
         plt.xlim(0, 24)
@@ -38,11 +33,22 @@ class ChartBuilder:
         plt.ylabel("Signal Strength")
 
         current_date = datafile.UtcStartTime.strftime("%Y-%m-%d")
-        plt.title("{0}\n{1}".format(datafile.Site, current_date))
-        plt.axvspan(sunset, sunrise, facecolor='blue', alpha=0.2)
-        plt.savefig('/Transfer/SuperSid/Temp/test.png')
+        plt.title(datafile.Site, loc='left')
+        plt.title(current_date)
+        plt.title("{0} - {1}".format(datafile.StationId, datafile.Frequency), loc='right')
 
-        return
+        if sunset < sunrise:
+            # Block in center
+            plt.axvspan(sunset, sunrise, facecolor='blue', alpha=0.2)
+        else:
+            # Block on edges
+            plt.axvspan(0.0, sunrise, facecolor='blue', alpha=0.2)
+            plt.axvspan(sunset, 24.0, facecolor='blue', alpha=0.2)
+
+        temp_filename = "/Transfer/SuperSid/Temp/{0}_{1}_{2}.png".format(datafile.Site, datafile.StationId, current_date)
+        plt.savefig(temp_filename)
+
+        return temp_filename
 
     @staticmethod
     def get_decimal_time(datetime_value):
@@ -62,11 +68,14 @@ class ChartBuilder:
 
         current_day = datafile.UtcStartTime.date()
         sun = site.sun(date=current_day)
-        sunrise = sun['sunrise']
 
-        previous_day = current_day - timedelta(days=1)
-        sun = site.sun(date=previous_day)
+        sunrise = sun['sunrise']
         sunset = sun['sunset']
 
-        return sunset, sunrise
+        if sunset.date() > current_day:
+            previous_day = current_day - timedelta(days=1)
+            sun = site.sun(date=previous_day)
+            sunset = sun['sunset']
+
+        return sunrise, sunset
 

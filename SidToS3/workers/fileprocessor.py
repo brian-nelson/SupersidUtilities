@@ -1,7 +1,8 @@
 from aws.s3 import S3
 from datetime import datetime
 from workers.datafileloader import DataFileLoader
-from workers.chartbuilder import ChartBuilder
+from workers.chartrenderer import ChartRenderer
+from workers.chartloader import ChartLoader
 import os
 
 
@@ -19,7 +20,8 @@ class FileProcessor:
             self.Config.AWS.Bucket)
 
         data_file_loader = DataFileLoader(s3)
-        chart_builder = ChartBuilder(s3)
+        chart_renderer = ChartRenderer()
+        chart_loader = ChartLoader(s3)
 
         utc_now = datetime.utcnow()
         utc_string = utc_now.date().isoformat()
@@ -38,13 +40,18 @@ class FileProcessor:
 
                 # don't process current file
                 if utc_string != datepart:
-                    chart_builder.generate_chart(file)
+                    temp_filename = chart_renderer.generate_chart(file)
+                    chart_loader.load_file(
+                        self.Config.AWS.ChartPath,
+                        self.Config.SiteName,
+                        station.CallSign,
+                        temp_filename)
 
-                    #data_file_loader.load_file(
-                    #    self.Config.DataPath,
-                    #    self.Config.SiteName,
-                    #    station.CallSign,
-                    #    file)
+                    data_file_loader.load_file(
+                        self.Config.AWS.DataPath,
+                        self.Config.SiteName,
+                        station.CallSign,
+                        file)
 
         return
 
