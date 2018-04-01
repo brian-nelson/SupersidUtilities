@@ -23,5 +23,5 @@ if __name__ == '__main__':
     config = Config(configFilename)
 
     loader = FileProcessor(config)
-    loader.process()
+    processed_files = loader.process()
 

@@ -1,8 +1,8 @@
 from aws.s3 import S3
 from datetime import datetime
-from workers.datafiles3loader import DataFileS3Loader
 from workers.chartrenderer import ChartRenderer
-from workers.charts3loader import ChartS3Loader
+from workers.s3loader import S3Loader
+from workers.processedfile import ProcessedFile
 import os
 
 
@@ -19,12 +19,12 @@ class FileProcessor:
             self.Config.AWS.Secret,
             self.Config.AWS.Bucket)
 
-        data_file_loader = DataFileLoader(s3)
-        chart_renderer = ChartRenderer()
-        chart_loader = ChartLoader(s3)
+        s3_loader = S3Loader(s3)
 
         utc_now = datetime.utcnow()
         utc_string = utc_now.date().isoformat()
+
+        processed_files = []
 
         # Loop through the stations
         for station in self.Config.Stations:
@@ -36,25 +36,56 @@ class FileProcessor:
                 basename = os.path.basename(file)
 
                 # pull the date from the filename
-                datepart = basename[11:21]
+                current_file_datepart = basename[11:21]
 
                 # don't process current file
-                if utc_string != datepart:
-                    temp_filename = chart_renderer.generate_chart(file)
-                    chart_loader.load_file(
-                        self.Config.AWS.ChartPath,
-                        self.Config.SiteName,
-                        station.CallSign,
-                        temp_filename)
+                if utc_string != current_file_datepart:
+                    #Generate chart and load datafile
+                    currentDate = datetime.strptime(current_file_datepart, "%Y-%m-%d")
+                    remote_chart = self.generate_load_chart(s3_loader, station, file)
+                    remote_datafile = self.load_data_file(s3_loader, station, file)
 
-                    data_file_loader.load_file(
-                        self.Config.AWS.DataPath,
-                        self.Config.SiteName,
-                        station.CallSign,
-                        file)
+                    processed_files.append(ProcessedFile(currentDate, remote_chart, remote_datafile))
 
-        return
+        return processed_files
 
+    # Generates, Loads and then deletes chart.
+    def generate_load_chart(self, s3_loader, station, data_filename):
+        chart_renderer = ChartRenderer()
+
+        # Generate the chart from the data file
+        temp_filename = chart_renderer.generate_chart(data_filename)
+
+        # Load the chart to S3 in correct location
+        remote_file = s3_loader.load_file(
+            self.Config.AWS.ChartPath,
+            self.Config.SiteName,
+            station.CallSign,
+            temp_filename)
+
+        # remove the chart
+        os.remove(temp_filename)
+
+        return remote_file
+
+    # Loads data file to s3 then moves it to archive folder
+    def load_data_file(self, s3_loader, station, data_filename):
+        # Load the data file to S3
+        remote_file = s3_loader.load_file(
+            self.Config.AWS.DataPath,
+            self.Config.SiteName,
+            station.CallSign,
+            data_filename)
+
+        # Archive the data file
+        pathname = os.path.dirname(data_filename)
+        basename = os.path.basename(data_filename)
+        archive_file = "{0}/Archive/{1}".format(pathname, basename)
+        os.rename(data_filename, archive_file)
+
+        return remote_file
+
+    #list files that match site and callsign
     @staticmethod
     def list_files(folder, site_name, call_sign):
         files = []

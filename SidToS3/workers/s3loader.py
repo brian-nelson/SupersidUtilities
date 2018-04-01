@@ -1,7 +1,7 @@
 import os
 
 
-class ChartS3Loader:
+class S3Loader:
 
     def __init__(self, s3):
         self.S3 = s3
@@ -13,7 +13,7 @@ class ChartS3Loader:
 
         # Get the folder to store this data to on s3
         remote_path = "{0}/{1}/{2}".format(
-            chartpath,
+            path,
             sitename,
             station)
 
@@ -29,6 +29,4 @@ class ChartS3Loader:
         # record that file was loaded
         print("Loaded {0} to s3".format(local_file))
 
-        os.remove(local_file)
-
-        return
+        return remote_file
