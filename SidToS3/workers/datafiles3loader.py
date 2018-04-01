@@ -1,13 +1,14 @@
 import os
 
 
-class DataFileLoader:
+class DataFileS3Loader:
 
     def __init__(self, s3):
         self.S3 = s3
 
         return
 
+    # Load the datafile then archive
     def load_file(self, datapath, sitename, station, localfile):
 
         # Get the folder to store this data to on s3

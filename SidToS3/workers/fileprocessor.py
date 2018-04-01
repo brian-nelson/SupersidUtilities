@@ -1,8 +1,8 @@
 from aws.s3 import S3
 from datetime import datetime
-from workers.datafileloader import DataFileLoader
+from workers.datafiles3loader import DataFileS3Loader
 from workers.chartrenderer import ChartRenderer
-from workers.chartloader import ChartLoader
+from workers.charts3loader import ChartS3Loader
 import os
 
 

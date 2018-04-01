@@ -1,14 +1,15 @@
 import os
 
 
-class ChartLoader:
+class ChartS3Loader:
 
     def __init__(self, s3):
         self.S3 = s3
 
         return
 
-    def load_file(self, chartpath, sitename, station, local_file):
+    # Load file to S3 then delete the file
+    def load_file(self, path, sitename, station, local_file):
 
         # Get the folder to store this data to on s3
         remote_path = "{0}/{1}/{2}".format(
