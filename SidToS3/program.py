@@ -1,5 +1,6 @@
 from workers.fileprocessor import FileProcessor
 from configuration.config import Config
+from workers.indexer import Indexer
 
 def getopts(argv):
     #Credit for function - https://gist.github.com/dideler/2395703
@@ -24,4 +25,7 @@ if __name__ == '__main__':
 
     loader = FileProcessor(config)
     processed_files = loader.process()
+
+    indexer = Indexer(config)
+    indexer.index_new_files(processed_files)
 

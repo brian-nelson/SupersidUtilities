@@ -1,9 +1,10 @@
-from aws.s3 import S3
+import os
 from datetime import datetime
+
+from aws.s3 import S3
+from objects.processedfile import ProcessedFile
 from workers.chartrenderer import ChartRenderer
 from workers.s3loader import S3Loader
-from workers.processedfile import ProcessedFile
-import os
 
 
 class FileProcessor:
@@ -47,7 +48,7 @@ class FileProcessor:
 
                     processed_files.append(ProcessedFile(currentDate, remote_chart, remote_datafile))
 
-        return processed_files
+        return sorted(processed_files, key=lambda x: getattr(x, "Datetime"))
 
     # Generates, Loads and then deletes chart.
     def generate_load_chart(self, s3_loader, station, data_filename):
