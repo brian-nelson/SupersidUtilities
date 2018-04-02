@@ -1,7 +1,7 @@
 import os
 
 
-class S3Loader:
+class S3Helper:
 
     def __init__(self, s3):
         self.S3 = s3
@@ -9,13 +9,14 @@ class S3Loader:
         return
 
     # Load file to S3 then delete the file
-    def load_file(self, path, sitename, station, local_file):
+    def load_file(self, path, sitename, station, datatype, local_file):
 
         # Get the folder to store this data to on s3
-        remote_path = "{0}/{1}/{2}".format(
+        remote_path = "{0}/{1}/{2}/{3}".format(
             path,
             sitename,
-            station)
+            station,
+            datatype)
 
         # get the actual file name
         basename = os.path.basename(local_file)

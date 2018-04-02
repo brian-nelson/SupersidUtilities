@@ -1,5 +1,5 @@
 from aws.s3 import S3
-from workers.s3loader import S3Loader
+from helpers.s3helper import S3Helper
 
 class Indexer:
 
@@ -14,7 +14,7 @@ class Indexer:
             self.Config.AWS.Secret,
             self.Config.AWS.Bucket)
 
-        s3_loader = S3Loader(s3)
+        s3_loader = S3Helper(s3)
 
         # todo
         # for each processed file
@@ -28,4 +28,32 @@ class Indexer:
         #    serialize to json
         #    save to s3
 
+        month_indexes = dict()
+
+        for processed_file in processed_files:
+            key = self.build_index_key(
+                processed_file.Site,
+                processed_file.Station,
+                processed_file.Datetime)
+
+            if key not in month_indexes:
+                month_indexes[key] = self.get_index_file(
+                    s3,
+                    processed_file.Site,
+                    processed_file.Station,
+                    key)
+
+            month_index = month_indexes[key]
+
         return
+
+    @staticmethod
+    def get_index_file(s3, site, station, key):
+        return ()
+
+    @staticmethod
+    def build_index_key(site, station, datetime):
+        return "{0}_{1}_{2}".format(
+            site,
+            station,
+            datetime.strptime(datetime, "%Y-%m-%d"))
