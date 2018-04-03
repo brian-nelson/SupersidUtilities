@@ -70,7 +70,7 @@ class FileProcessor:
 
         # Load the chart to S3 in correct location
         remote_file = s3_loader.load_file(
-            self.Config.AWS.ChartPath,
+            self.Config.AWS.SupersidPath,
             self.Config.SiteName,
             station.CallSign,
             "charts",
@@ -86,7 +86,7 @@ class FileProcessor:
     def load_data_file(self, s3_loader, station, data_filename):
         # Load the data file to S3
         remote_file = s3_loader.load_file(
-            self.Config.AWS.DataPath,
+            self.Config.AWS.SupersidPath,
             self.Config.SiteName,
             station.CallSign,
             "data",

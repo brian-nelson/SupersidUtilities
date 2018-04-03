@@ -44,10 +44,9 @@ class Config:
         aws_key = cp.get('AWS', 'key')
         aws_secret = cp.get('AWS', 'secret')
         aws_bucket = cp.get('AWS', 'bucket')
-        data_path = cp.get('AWS', 'datapath')
-        chart_path = cp.get('AWS', 'chartpath')
+        supersid_path = cp.get('AWS', 'supersidpath')
 
-        aws_config = AwsConfig(aws_key, aws_secret, aws_bucket, data_path, chart_path)
+        aws_config = AwsConfig(aws_key, aws_secret, aws_bucket, supersid_path)
         self.AWS = aws_config
 
         return

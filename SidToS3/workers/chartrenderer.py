@@ -44,7 +44,7 @@ class ChartRenderer:
             plt.axvspan(0.0, sunrise, facecolor='blue', alpha=0.2)
             plt.axvspan(sunset, 24.0, facecolor='blue', alpha=0.2)
 
-        temp_filename = "{0}/{1}_{1}_{2}.png".format(temp_path, datafile.Site, datafile.StationId, current_date)
+        temp_filename = "{0}/{1}_{2}_{3}.png".format(temp_path, datafile.Site, datafile.StationId, current_date)
         plt.savefig(temp_filename)
 
         return temp_filename

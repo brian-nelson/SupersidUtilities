@@ -9,13 +9,13 @@ class S3Helper:
         return
 
     # Load file to S3 then delete the file
-    def load_file(self, path, sitename, station, datatype, local_file):
+    def load_file(self, supersid_path, sitename, station_callsign, datatype, local_file):
 
         # Get the folder to store this data to on s3
-        remote_path = "{0}/{1}/{2}/{3}".format(
-            path,
+        remote_path = "{0}/stations/{1}/{2}/{3}".format(
+            supersid_path,
             sitename,
-            station,
+            station_callsign,
             datatype)
 
         # get the actual file name
