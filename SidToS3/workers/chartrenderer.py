@@ -77,4 +77,3 @@ class ChartRenderer:
             sunset = sun['sunset']
 
         return sunrise, sunset
-

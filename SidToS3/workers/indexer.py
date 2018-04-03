@@ -39,8 +39,8 @@ class Indexer:
             if key not in month_indexes:
                 month_indexes[key] = self.get_index_file(
                     s3,
-                    processed_file.Site,
-                    processed_file.Station,
+                    processed_file.Sitename,
+                    processed_file.StationCallsign,
                     key)
 
             month_index = month_indexes[key]
@@ -58,4 +58,4 @@ class Indexer:
         return "{0}_{1}_{2}".format(
             site,
             station,
-            datetime.strptime(datetime, "%Y-%m-%d"))
+            datetime.strftime("%Y-%m-%d"))
