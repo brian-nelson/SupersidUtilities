@@ -32,8 +32,8 @@ class Indexer:
 
         for processed_file in processed_files:
             key = self.build_index_key(
-                processed_file.Site,
-                processed_file.Station,
+                processed_file.Sitename,
+                processed_file.StationCallsign,
                 processed_file.Datetime)
 
             if key not in month_indexes:
@@ -49,6 +49,8 @@ class Indexer:
 
     @staticmethod
     def get_index_file(s3, site, station, key):
+
+
         return ()
 
     @staticmethod

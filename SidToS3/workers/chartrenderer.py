@@ -8,10 +8,9 @@ from astral import Location
 class ChartRenderer:
 
     def __init__(self):
-
         return
 
-    def generate_chart(self, data_filename):
+    def generate_chart(self, data_filename, temp_path):
         datafile = DataFile(data_filename)
 
         x = []
@@ -45,7 +44,7 @@ class ChartRenderer:
             plt.axvspan(0.0, sunrise, facecolor='blue', alpha=0.2)
             plt.axvspan(sunset, 24.0, facecolor='blue', alpha=0.2)
 
-        temp_filename = "/Transfer/SuperSid/Temp/{0}_{1}_{2}.png".format(datafile.Site, datafile.StationId, current_date)
+        temp_filename = "{0}/{1}_{1}_{2}.png".format(temp_path, datafile.Site, datafile.StationId, current_date)
         plt.savefig(temp_filename)
 
         return temp_filename

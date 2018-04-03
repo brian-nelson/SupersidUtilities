@@ -28,6 +28,7 @@ class Config:
         self.MonitorId = cp.get('PARAMETERS', 'monitor_id')
         self.HourlySave = cp.get('PARAMETERS', 'hourly_save')
         self.DataPath = cp.get('PARAMETERS', 'data_path')
+        self.TempPath = cp.get('PARAMETERS', 'temp_path')
         self.NumberOfStations = int(cp.get('PARAMETERS', 'number_of_stations'))
         self.Stations = []
 

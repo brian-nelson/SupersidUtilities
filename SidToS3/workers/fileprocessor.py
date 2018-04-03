@@ -24,13 +24,14 @@ class FileProcessor:
 
         utc_now = datetime.utcnow()
         utc_string = utc_now.date().isoformat()
+        site_name = self.Config.SiteName
 
         processed_files = []
 
         # Loop through the stations
         for station in self.Config.Stations:
             # Get the files for the specified station
-            files = self.list_files(self.Config.DataPath, self.Config.SiteName, station.CallSign)
+            files = self.list_files(self.Config.DataPath, site_name, station.CallSign)
 
             for file in files:
                 # Get the filename
@@ -51,7 +52,7 @@ class FileProcessor:
                     # add the file to list of processed files for later indexing
                     processed_files.append(
                         ProcessedFile(
-                            self.SiteName,
+                            site_name,
                             station.CallSign,
                             currentDate,
                             remote_chart,
@@ -65,7 +66,7 @@ class FileProcessor:
         chart_renderer = ChartRenderer()
 
         # Generate the chart from the data file
-        temp_filename = chart_renderer.generate_chart(data_filename)
+        temp_filename = chart_renderer.generate_chart(data_filename, self.Config.TempPath)
 
         # Load the chart to S3 in correct location
         remote_file = s3_loader.load_file(
