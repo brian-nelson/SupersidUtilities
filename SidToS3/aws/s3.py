@@ -11,10 +11,7 @@ class S3:
         return
 
     def upload_file(self, local_file, remote_file):
-        s3 = boto3.resource(
-            's3',
-            aws_access_key_id=self.Key,
-            aws_secret_access_key=self.Secret)
+        s3 = self.get_s3()
 
         try:
             s3.Bucket(self.Bucket).upload_file(local_file, remote_file)
@@ -27,7 +24,7 @@ class S3:
                 raise
 
     def download_file(self, remote_file, local_file):
-        s3 = boto3.resource('s3')
+        s3 = self.get_s3()
 
         try:
             s3.Bucket(self.Bucket).download_file(remote_file, local_file)

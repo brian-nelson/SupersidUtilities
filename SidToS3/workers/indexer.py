@@ -14,7 +14,7 @@ class Indexer:
             self.Config.AWS.Secret,
             self.Config.AWS.Bucket)
 
-        s3_loader = S3Helper(s3)
+        s3helper = S3Helper(s3)
 
         # todo
         # for each processed file
@@ -48,10 +48,16 @@ class Indexer:
         return
 
     @staticmethod
-    def get_index_file(s3, site, station, key):
+    def get_index_file(s3helper, supersid_path, site, station, key, temp_folder):
+        local_file = s3helper.get_file(
+            supersid_path,
+            site,
+            station,
+            "indexes",
+            key + ".json",
+            temp_folder)
 
-
-        return ()
+        return local_file
 
     @staticmethod
     def build_index_key(site, station, datetime):
