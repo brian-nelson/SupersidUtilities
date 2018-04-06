@@ -1,5 +1,8 @@
 from aws.s3 import S3
 from helpers.s3helper import S3Helper
+import json
+import os
+from objects.index import DataIndex
 
 class Indexer:
 
@@ -37,27 +40,59 @@ class Indexer:
                 processed_file.Datetime)
 
             if key not in month_indexes:
-                month_indexes[key] = self.get_index_file(
+                index = self.get_index_file_from_S3(
                     s3,
                     processed_file.Sitename,
                     processed_file.StationCallsign,
-                    key)
+                    key,
+                    self.Config.TempPath)
+
+                if index is None:
+                    month_indexes[key] = DataIndex()
 
             month_index = month_indexes[key]
+            
+
 
         return
 
-    @staticmethod
-    def get_index_file(s3helper, supersid_path, site, station, key, temp_folder):
+    def write_index_file_to_s3(self, index, s3helper, supersid_path, site, station, key, temp_folder):
+        local_file = "{0}/{1}.json".format(temp_folder, key)
+        self.write_index_file(index, local_file)
+
+        remote_file = s3helper.load_file(
+            supersid_path,
+            site,
+            station,
+            "index",
+            local_file)
+
+        os.remove(local_file)
+
+        return
+
+    def write_index_file(self, index, local_file):
+        json.dump(index, open(local_file))
+
+    def read_index_file(self, local_file):
+        index = json.load(open(local_file))
+
+        return index
+
+
+    def get_index_file_from_S3(self, s3helper, supersid_path, site, station, key, temp_folder):
         local_file = s3helper.get_file(
             supersid_path,
             site,
             station,
-            "indexes",
+            "index",
             key + ".json",
             temp_folder)
 
-        return local_file
+        if local_file is None:
+            return None
+
+        return self.read_index_file(local_file)
 
     @staticmethod
     def build_index_key(site, station, datetime):
