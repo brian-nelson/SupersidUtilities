@@ -3,6 +3,8 @@ from helpers.s3helper import S3Helper
 import json
 import os
 from objects.index import DataIndex
+from objects.indexentry import DataFile
+from datetime import datetime
 
 class Indexer:
 
@@ -11,6 +13,19 @@ class Indexer:
 
         return
 
+    # creates a monthly index file for all processed files
+    # the fill will have day entries for each day that has
+    # been loaded.  The intent is that these json indexes
+    # can be used with a mustache template (or other) to build a
+    # web page automatically
+    # 2018-03
+    # - Station - abcde
+    # - Callsign - NML
+    # - Files
+    #   - File
+    #     - Date - 2018-03-01
+    #     - Chart - downloads.abc.com/abcde/nml/charts/2018-03-01.png
+    #     - Datafile - downloads.abc.com/abcde/nml/data/2018-03-01.csv
     def index_new_files(self, processed_files):
         s3 = S3(
             self.Config.AWS.Key,
@@ -19,40 +34,59 @@ class Indexer:
 
         s3helper = S3Helper(s3)
 
-        # todo
-        # for each processed file
-        #   Is the index file already in memory
-        #   No - pull file from server
-        #        deserialize into dataindex and datafile
-        #        add to local collection
-        #   Is file and chart already in the index
-        #   No - add file to index
-        # for each index file
-        #    serialize to json
-        #    save to s3
-
+        # create dictionary of local index files
         month_indexes = dict()
 
+        # loop through all files that were processed
         for processed_file in processed_files:
-            key = self.build_index_key(
-                processed_file.Sitename,
-                processed_file.StationCallsign,
-                processed_file.Datetime)
+            #store local variables
+            sitename = processed_file.Sitename
+            call_sign = processed_file.StationCallsign;
+            file_date = processed_file.Datetime.date;
 
+            # build the key for the dictionary for this processed file
+            key = self.build_index_key(
+                sitename,
+                call_sign,
+                file_date)
+
+            # do we already have the index file
             if key not in month_indexes:
+                # We do not.
+                # get the file from s3
                 index = self.get_index_file_from_S3(
                     s3,
-                    processed_file.Sitename,
-                    processed_file.StationCallsign,
+                    sitename,
+                    call_sign,
                     key,
                     self.Config.TempPath)
 
+                # if we didn't find it build a new one
+                # and add it to the dictionary
                 if index is None:
-                    month_indexes[key] = DataIndex()
+                    month_indexes[key] = DataIndex(
+                        sitename,
+                        call_sign,
+                        file_date.year,
+                        file_date.month)
 
+            # pull the index file from the dictionary
             month_index = month_indexes[key]
-            
 
+            # find the entry for the date
+            data_file = month_index.findDataFile(file_date)
+
+            if data_file is None:
+                data_file = DataFile(file_date)
+                month_index.Files.append(data_file)
+            
+            data_file.Chart = processed_file.RemoteChartFilename
+            data_file.Datafile = processed_file.RemoteDateFilename
+
+        # todo
+        # for each index file
+        #    serialize to json
+        #    save to s3
 
         return
 
@@ -99,4 +133,4 @@ class Indexer:
         return "{0}_{1}_{2}".format(
             site,
             station,
-            datetime.strftime("%Y-%m-%d"))
+            datetime.strftime("%Y-%m"))
